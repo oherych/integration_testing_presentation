@@ -1,0 +1,13 @@
+package: github.com/oherych/integration_testing_presentation
+import:
+- package: github.com/go-chi/chi
+  version: ^3.3.2
+- package: github.com/jinzhu/gorm
+  version: ^1.0.0
+- package: github.com/lib/pq
+- package: github.com/mattes/migrate
+  version: ^3.0.1
+- package: github.com/minio/minio-go
+  version: ^4.0.3
+- package: github.com/go-chi/render
+  version: ^1.0.0

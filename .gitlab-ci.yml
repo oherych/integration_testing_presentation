@@ -1,0 +1,33 @@
+  variables:
+    POSTGRES_HOST:      "postgress"
+    POSTGRES_USER:      "user"
+    POSTGRES_PASSWORD:  "password"
+    POSTGRES_DB:        "test"
+    MINIO_ACCESS_KEY:   "BH0K3LEZSZX2KFM53LLS"
+    MINIO_SECRET_KEY:   "Pzfn+HrTbw+oPO8Tz5NFnj/1RbWSjH1qQ+cqCJE6"
+
+  stages:
+    - test
+
+  test:
+     tags: [docker]
+     image: "golang:1.9.2"
+     stage: test
+     script:
+       - export PATH="$GOPATH/src/$REPOSITORY_PATH/vendor/bin:${PATH}"
+       - export BUILD_PATH=$(pwd)
+       - mkdir -p $GOPATH/src/$REPOSITORY_PATH
+       - cp -r $BUILD_PATH/. $GOPATH/src/$REPOSITORY_PATH
+       - cd $GOPATH/src/$REPOSITORY_PATH
+       - go test ./...
+     variables:
+        DATABASE_HOST: $POSTGRES_HOST
+        DATABASE_NAME: $POSTGRES_DB
+        DATABASE_USER: $POSTGRES_USER
+        DATABASE_PASSWORD: $POSTGRES_PASSWORD
+        STORAGE_ENDPOINT: "minio:9000"
+        MINIO_ACCESS_KEY: $MINIO_ACCESS_KEY
+        MINIO_SECRET_KEY: $MINIO_SECRET_KEY
+     services:
+        - {name: "postgres:9.6-alpine", alias: "postgress"}
+        - {name: "minio/minio", alias: "minio", command: ["server", "/data"]}
