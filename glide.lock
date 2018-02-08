@@ -1,5 +1,5 @@
-hash: 655797a9a923ad3e9a3b2fa8b1676b5af83bf8e670c9df440fac122f51a1d48f
-updated: 2018-02-05T17:45:38.506126+02:00
+hash: be38ba3b37a12c13bacde29ca92461fec0d0bc11f41dac7f719d33662f3b320d
+updated: 2018-02-08T15:31:51.436128+02:00
 imports:
 - name: github.com/go-chi/chi
   version: e83ac2304db3c50cf03d96a2fcd39009d458bc35
@@ -32,7 +32,7 @@ imports:
 - name: github.com/mattn/go-isatty
   version: 6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c
 - name: github.com/minio/minio-go
-  version: 14f1d472d115bac5ca4804094aa87484a72ced61
+  version: 706c81d3ee2a18cdd8239faf544de8a066e7e261
   subpackages:
   - pkg/credentials
   - pkg/encrypt

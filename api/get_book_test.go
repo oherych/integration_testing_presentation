@@ -5,17 +5,17 @@ import (
 	"testing"
 )
 
-func TestGetBook(t *testing.T) {
+func TestGetBookIntegration(t *testing.T) {
 	table := map[string]struct {
 		BookID     string
 		ExpCode    int
 		ExpContent map[string]string
 	}{
 		"correct": {
-			BookID:  "913d5f4e-5759-455d-83fe-72939b3ddf3a",
+			BookID:  testBookID1,
 			ExpCode: http.StatusOK,
 			ExpContent: map[string]string{
-				"book_id": "913d5f4e-5759-455d-83fe-72939b3ddf3a",
+				"book_id": testBookID1,
 				"name":    "book name 1",
 			},
 		},
@@ -25,7 +25,9 @@ func TestGetBook(t *testing.T) {
 
 	for name, in := range table {
 		t.Run(name, func(t *testing.T) {
-			e := createTestEnvExpect(t)
+			e, done := createTestEnvExpect(t)
+			defer done()
+
 			p := e.GET("/book/{book_id}", in.BookID).Expect()
 
 			p.Status(in.ExpCode)
@@ -34,4 +36,15 @@ func TestGetBook(t *testing.T) {
 			}
 		})
 	}
+}
+
+func BenchmarkGetBookIntegration(b *testing.B) {
+	e, done := createTestEnvExpect(b)
+	defer done()
+
+	b.ResetTimer()
+	for j := 0; j < b.N; j++ {
+		e.GET("/book/{book_id}", testBookID1).Expect()
+	}
+	b.StopTimer()
 }

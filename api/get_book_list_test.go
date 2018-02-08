@@ -7,8 +7,9 @@ import (
 	"testing"
 )
 
-func TestGetBookList(t *testing.T) {
-	ts := createTestEnv(t)
+func TestGetBookListIntegration(t *testing.T) {
+	ts, done := createTestEnv(t)
+	defer done()
 
 	res, err := http.Get(ts.URL + "/book")
 	if err != nil {

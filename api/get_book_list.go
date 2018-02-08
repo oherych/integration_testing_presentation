@@ -10,7 +10,7 @@ import (
 
 func (a *service) getBookListHandler(w http.ResponseWriter, r *http.Request) {
 	var data []model.Book
-	err := a.postgress.Table("book").Find(&data).Error
+	err := a.postgress.Find(&data).Error
 	if err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(500), 500)

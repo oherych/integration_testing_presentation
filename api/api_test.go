@@ -1,17 +1,21 @@
 package api
 
 import (
-	"github.com/minio/minio-go"
 	"io/ioutil"
 	"net/http/httptest"
 	"os"
-	"testing"
+
+	"github.com/minio/minio-go"
 
 	"github.com/gavv/httpexpect"
 )
 
+const (
+	testBookID1 = "913d5f4e-5759-455d-83fe-72939b3ddf3a"
+)
+
 // createTestEnv create new test enviroment
-func createTestEnv(t *testing.T) *httptest.Server {
+func createTestEnv(t httpexpect.LoggerReporter) (*httptest.Server, func()) {
 	api, err := NewAPi(ApiConfing{
 		DatabaseName:           "dev",
 		DatabaseUser:           "user",
@@ -24,29 +28,29 @@ func createTestEnv(t *testing.T) *httptest.Server {
 		StoragePayloadBucket:   "test",
 	})
 	if err != nil {
-		t.Fatal(err)
+		t.Errorf("%s", err)
 	}
 
 	// remove all old tables
 	err = api.postgress.Exec("DROP SCHEMA public CASCADE; CREATE SCHEMA public;").Error
 	if err != nil {
-		t.Fatal(err)
+		t.Errorf("%s", err)
 	}
 
 	// create database structure
 	err = api.DatabaseMigrate("../db")
 	if err != nil {
-		t.Fatal(err)
+		t.Errorf("%s", err)
 	}
 
 	// load fixtures
 	b, err := ioutil.ReadFile("../_testdata/fixtures.sql")
 	if err != nil {
-		t.Fatal(err)
+		t.Errorf("%s", err)
 	}
 	err = api.postgress.Exec(string(b)).Error
 	if err != nil {
-		t.Fatal(err)
+		t.Errorf("%s", err)
 	}
 
 	// load files
@@ -54,25 +58,38 @@ func createTestEnv(t *testing.T) *httptest.Server {
 	for _, filePath := range files {
 		file, err := os.Open("../_testdata/" + filePath)
 		if err != nil {
-			t.Fatal(err)
+			t.Errorf("%s", err)
 		}
 
 		stat, err := file.Stat()
 		if err != nil {
-			t.Fatal(err)
+			t.Errorf("%s", err)
 		}
 
 		_, err = api.fileStorage.PutObject(api.conf.StoragePayloadBucket, filePath, file, stat.Size(), minio.PutObjectOptions{})
 		if err != nil {
-			t.Fatal(err)
+			t.Errorf("%s", err)
 		}
 	}
 
+	server := httptest.NewServer(api.server)
+
+	done := func() {
+		server.Close()
+		api.Close()
+	}
+
 	// return test server
-	return httptest.NewServer(api.server)
+	return server, done
 }
 
-func createTestEnvExpect(t *testing.T) *httpexpect.Expect {
-	server := createTestEnv(t)
-	return httpexpect.New(t, server.URL)
+func createTestEnvExpect(t httpexpect.LoggerReporter) (*httpexpect.Expect, func()) {
+	server, done := createTestEnv(t)
+
+	// return httpexpect.New(t, server.URL), done
+	// or
+	return httpexpect.WithConfig(httpexpect.Config{
+		BaseURL:  server.URL,
+		Reporter: httpexpect.NewAssertReporter(t),
+	}), done
 }

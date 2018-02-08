@@ -15,30 +15,34 @@ import (
 	_ "github.com/mattes/migrate/source/file"
 )
 
+// NewAPi create new api server
 func NewAPi(conf ApiConfing) (*service, error) {
-	postgress, err := gorm.Open("postgres", conf.postgressConection())
+
+	// connect to database
+	postgres, err := gorm.Open("postgres", conf.postgressConection())
 	if err != nil {
 		return nil, err
 	}
 
-	filestorage, err := minio.New(conf.StorageEndpoint, conf.StorageAccessKeyID, conf.StorageSecretAccessKey, false)
+	// connect to file storage and create bucket
+	fileStorage, err := minio.New(conf.StorageEndpoint, conf.StorageAccessKeyID, conf.StorageSecretAccessKey, false)
 	if err != nil {
 		return nil, err
 	}
-	exists, err := filestorage.BucketExists(conf.StoragePayloadBucket)
+	exists, err := fileStorage.BucketExists(conf.StoragePayloadBucket)
 	if err != nil {
 		return nil, err
 	}
 	if !exists {
-		if err = filestorage.MakeBucket(conf.StoragePayloadBucket, conf.StoragePayloadBucket); err != nil {
+		if err = fileStorage.MakeBucket(conf.StoragePayloadBucket, conf.StoragePayloadBucket); err != nil {
 			return nil, err
 		}
 	}
 
 	api := service{
 		conf:        conf,
-		postgress:   postgress,
-		fileStorage: filestorage,
+		postgress:   postgres,
+		fileStorage: fileStorage,
 	}
 
 	api.server = api.setup()
@@ -46,6 +50,7 @@ func NewAPi(conf ApiConfing) (*service, error) {
 	return &api, nil
 }
 
+// ApiConfing api configuration
 type ApiConfing struct {
 	Port                   string
 	DatabaseHost           string
@@ -70,18 +75,17 @@ type service struct {
 	server      http.Handler
 }
 
+// Run start serving or http port
 func (a *service) Run() {
 	http.ListenAndServe(a.conf.Port, a.server)
 }
 
-func (a *service) setup() http.Handler {
-	r := chi.NewRouter()
-	r.Get("/book", a.getBookListHandler)
-	r.Get("/book/{book_id}", a.getBookHandler)
-
-	return r
+// Close http server and all external connections
+func (a *service) Close() {
+	// TODO: implement me
 }
 
+// DatabaseMigrate run postgres database migration
 func (a *service) DatabaseMigrate(migrationsDir string) error {
 	db, err := gorm.Open("postgres", a.conf.postgressConection())
 	if err != nil {
@@ -112,4 +116,13 @@ func (a *service) DatabaseMigrate(migrationsDir string) error {
 	}
 
 	return nil
+}
+
+func (a *service) setup() http.Handler {
+	r := chi.NewRouter()
+	r.Get("/logo", a.GetLogoHandler)
+	r.Get("/book", a.getBookListHandler)
+	r.Get("/book/{book_id}", a.getBookHandler)
+
+	return r
 }
