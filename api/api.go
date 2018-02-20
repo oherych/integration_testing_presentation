@@ -131,6 +131,7 @@ func (a *service) setup() http.Handler {
 	r := chi.NewRouter()
 	r.Get("/logo", a.GetLogoHandler)
 	r.Get("/book", a.getBookListHandler)
+	r.Post("/book", a.createBookHandler)
 	r.Get("/book/{book_id}", a.getBookHandler)
 
 	return r
