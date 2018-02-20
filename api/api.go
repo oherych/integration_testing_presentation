@@ -91,7 +91,7 @@ func (a *service) Run() error {
 
 // Close http server and all external connections
 func (a *service) Close() {
-	// TODO: implement me
+	a.postgress.Close()
 }
 
 // DatabaseMigrate run postgres database migration
