@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/caarlos0/env"
+
 	"github.com/minio/minio-go"
 
 	"github.com/mattes/migrate/database/postgres"
@@ -50,18 +52,25 @@ func NewAPi(conf ApiConfing) (*service, error) {
 	return &api, nil
 }
 
+// ParseConfig parse environment parameter
+func ParseConfig() (ApiConfing, error) {
+	cfg := ApiConfing{}
+	err := env.Parse(&cfg)
+	return cfg, err
+}
+
 // ApiConfing api configuration
 type ApiConfing struct {
-	Port                   string
-	DatabaseHost           string
-	DatabaseUser           string
-	DatabasePassword       string
-	DatabaseName           string
-	StorageEndpoint        string
-	StorageAccessKeyID     string
-	StorageSecretAccessKey string
-	StorageLocation        string
-	StoragePayloadBucket   string
+	Port                   string `env:"PORT" envDefault:"80"`
+	DatabaseHost           string `env:"DATABASE_HOST,required"`
+	DatabaseUser           string `env:"DATABASE_USER"`
+	DatabasePassword       string `env:"DATABASE_PASSWORD"`
+	DatabaseName           string `env:"DATABASE_NAME,required"`
+	StorageEndpoint        string `env:"STORAGE_ENDPOINT,required"`
+	StorageAccessKeyID     string `env:"STORAGE_ACCESS_KEY,required"`
+	StorageSecretAccessKey string `env:"STORAGE_SECRET_KEY,required"`
+	StorageLocation        string `env:"STORAGE_LOCATION,required"`
+	StoragePayloadBucket   string `env:"STORAGE_PAYLOAD_BUCKET,required"`
 }
 
 func (a *ApiConfing) postgressConection() string {
@@ -76,8 +85,8 @@ type service struct {
 }
 
 // Run start serving or http port
-func (a *service) Run() {
-	http.ListenAndServe(a.conf.Port, a.server)
+func (a *service) Run() error {
+	return http.ListenAndServe(a.conf.Port, a.server)
 }
 
 // Close http server and all external connections

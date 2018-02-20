@@ -1,6 +1,8 @@
-hash: be38ba3b37a12c13bacde29ca92461fec0d0bc11f41dac7f719d33662f3b320d
-updated: 2018-02-08T15:31:51.436128+02:00
+hash: cd3774114f26aa5a7a7f00f8f8378bd74cebd2e4f741e7233793d060f26e17de
+updated: 2018-02-20T18:06:45.67089+02:00
 imports:
+- name: github.com/caarlos0/env
+  version: 7cd7992b3bc86f920394f8de92c13900da1a46b7
 - name: github.com/go-chi/chi
   version: e83ac2304db3c50cf03d96a2fcd39009d458bc35
 - name: github.com/go-chi/render

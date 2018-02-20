@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"net/http/httptest"
 	"os"
+	"testing"
 
 	"github.com/minio/minio-go"
 
@@ -14,43 +15,58 @@ const (
 	testBookID1 = "913d5f4e-5759-455d-83fe-72939b3ddf3a"
 )
 
+var (
+	defaultTestEnv = map[string]string{
+		"DATABASE_HOST":          "localhost",
+		"DATABASE_USER":          "user",
+		"DATABASE_NAME":          "dev",
+		"DATABASE_PASSWORD":      "password",
+		"STORAGE_ENDPOINT":       "localhost:9000",
+		"STORAGE_ACCESS_KEY":     "BH0K3LEZSZX2KFM53LLS",
+		"STORAGE_SECRET_KEY":     "Pzfn+HrTbw+oPO8Tz5NFnj/1RbWSjH1qQ+cqCJE6",
+		"STORAGE_LOCATION":       "eu-central-1",
+		"STORAGE_PAYLOAD_BUCKET": "test",
+	}
+)
+
 // createTestEnv create new test enviroment
-func createTestEnv(t httpexpect.LoggerReporter) (*httptest.Server, func()) {
-	api, err := NewAPi(ApiConfing{
-		DatabaseName:           "dev",
-		DatabaseUser:           "user",
-		DatabaseHost:           "localhost",
-		DatabasePassword:       "password",
-		StorageEndpoint:        "localhost:9000",
-		StorageLocation:        "eu-central-1",
-		StorageAccessKeyID:     "BH0K3LEZSZX2KFM53LLS",
-		StorageSecretAccessKey: "Pzfn+HrTbw+oPO8Tz5NFnj/1RbWSjH1qQ+cqCJE6",
-		StoragePayloadBucket:   "test",
-	})
+func createTestEnv(t testing.TB) (*httptest.Server, func()) {
+	for name, val := range defaultTestEnv {
+		if _, ok := os.LookupEnv(name); !ok {
+			os.Setenv(name, val)
+		}
+	}
+
+	cfg, err := ParseConfig()
 	if err != nil {
-		t.Errorf("%s", err)
+		t.Fatal(err)
+	}
+
+	api, err := NewAPi(cfg)
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	// remove all old tables
 	err = api.postgress.Exec("DROP SCHEMA public CASCADE; CREATE SCHEMA public;").Error
 	if err != nil {
-		t.Errorf("%s", err)
+		t.Fatal(err)
 	}
 
 	// create database structure
 	err = api.DatabaseMigrate("../db")
 	if err != nil {
-		t.Errorf("%s", err)
+		t.Fatal(err)
 	}
 
 	// load fixtures
 	b, err := ioutil.ReadFile("../_testdata/fixtures.sql")
 	if err != nil {
-		t.Errorf("%s", err)
+		t.Fatal(err)
 	}
 	err = api.postgress.Exec(string(b)).Error
 	if err != nil {
-		t.Errorf("%s", err)
+		t.Fatal(err)
 	}
 
 	// load files
@@ -58,17 +74,17 @@ func createTestEnv(t httpexpect.LoggerReporter) (*httptest.Server, func()) {
 	for _, filePath := range files {
 		file, err := os.Open("../_testdata/" + filePath)
 		if err != nil {
-			t.Errorf("%s", err)
+			t.Fatal(err)
 		}
 
 		stat, err := file.Stat()
 		if err != nil {
-			t.Errorf("%s", err)
+			t.Fatal(err)
 		}
 
 		_, err = api.fileStorage.PutObject(api.conf.StoragePayloadBucket, filePath, file, stat.Size(), minio.PutObjectOptions{})
 		if err != nil {
-			t.Errorf("%s", err)
+			t.Fatal(err)
 		}
 	}
 
@@ -83,7 +99,7 @@ func createTestEnv(t httpexpect.LoggerReporter) (*httptest.Server, func()) {
 	return server, done
 }
 
-func createTestEnvExpect(t httpexpect.LoggerReporter) (*httpexpect.Expect, func()) {
+func createTestEnvExpect(t testing.TB) (*httpexpect.Expect, func()) {
 	server, done := createTestEnv(t)
 
 	// return httpexpect.New(t, server.URL), done
