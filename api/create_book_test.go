@@ -8,12 +8,22 @@ import (
 
 func TestCreateBookIntegration(t *testing.T) {
 	table := map[string]struct {
+		BookID     string
 		BookName   string
 		ExpCode    int
-		ExpContent map[string]string
+		ExpContent interface{}
 	}{
 		"correct": {
+			BookID:   newCorrectBookID,
 			BookName: "new book",
+			ExpCode:  http.StatusOK,
+			ExpContent: map[string]string{
+				"status": "ok",
+			},
+		},
+		"update": {
+			BookID:   testBookID1,
+			BookName: "updated name",
 			ExpCode:  http.StatusOK,
 			ExpContent: map[string]string{
 				"status": "ok",
@@ -26,20 +36,19 @@ func TestCreateBookIntegration(t *testing.T) {
 			e, done := createTestEnvExpect(t)
 			defer done()
 
-			p := e.POST("/book").
+			p := e.POST("/book/{book_id}", in.BookID).
 				WithFormField("name", in.BookName).
 				Expect()
 
 			p.Status(in.ExpCode)
-			if in.ExpCode == http.StatusOK {
-				p.JSON().Equal(in.ExpContent)
-			}
+			p.JSON().Equal(in.ExpContent)
+
 		})
 	}
 }
 
 func TestCreateBookLoading(t *testing.T) {
-	const requests = 10
+	const requests = 20
 	var wg sync.WaitGroup
 
 	e, done := createTestEnvExpect(t)
@@ -47,12 +56,15 @@ func TestCreateBookLoading(t *testing.T) {
 
 	wg.Add(requests)
 	for j := 0; j < requests; j++ {
-		go func() {
+		// TODO: run parallel
+		func() {
 			defer wg.Done()
 
-			e.POST("/book").
+			p := e.POST("/book/{book_id}", newCorrectBookID).
 				WithFormField("name", "test book").
 				Expect()
+
+			p.Status(http.StatusOK)
 		}()
 	}
 

@@ -9,7 +9,7 @@ func TestGetBookIntegration(t *testing.T) {
 	table := map[string]struct {
 		BookID     string
 		ExpCode    int
-		ExpContent map[string]string
+		ExpContent interface{}
 	}{
 		"correct": {
 			BookID:  testBookID1,
@@ -19,7 +19,6 @@ func TestGetBookIntegration(t *testing.T) {
 				"name":    "book name 1",
 			},
 		},
-		//TODO: check empty BookID
 		//TODO: check wrong BookID
 	}
 
@@ -46,5 +45,4 @@ func BenchmarkGetBookIntegration(b *testing.B) {
 	for j := 0; j < b.N; j++ {
 		e.GET("/book/{book_id}", testBookID1).Expect()
 	}
-	b.StopTimer()
 }

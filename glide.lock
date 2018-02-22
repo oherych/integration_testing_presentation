@@ -1,5 +1,5 @@
-hash: 58c4caa0a50aba3246ddce7aee20500074677cbaf3b1e527d9d03314f4f2d321
-updated: 2018-02-20T18:46:52.724415+02:00
+hash: cd3774114f26aa5a7a7f00f8f8378bd74cebd2e4f741e7233793d060f26e17de
+updated: 2018-02-22T02:10:59.928908+02:00
 imports:
 - name: github.com/caarlos0/env
   version: 7cd7992b3bc86f920394f8de92c13900da1a46b7
@@ -44,8 +44,6 @@ imports:
   - pkg/set
 - name: github.com/mitchellh/go-homedir
   version: b8bc1bf767474819792c23f32d8286a45736f1c6
-- name: github.com/satori/go.uuid
-  version: f58768cc1a7a7e77a3bd49e98cdd21419399b6a3
 - name: github.com/valyala/bytebufferpool
   version: e746df99fe4a3986f4d4f79e13c1e0117ce9c2f7
 - name: github.com/valyala/fasttemplate
@@ -106,7 +104,7 @@ testImports:
   subpackages:
   - diffmatchpatch
 - name: github.com/stretchr/testify
-  version: b91bfb9ebec76498946beb6af7c0230c7cc7ba6c
+  version: 12b6f73e6084dad08a7c6e575284b177ecafbc71
   subpackages:
   - assert
   - require

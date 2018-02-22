@@ -9,7 +9,7 @@ import (
 	"github.com/minio/minio-go"
 )
 
-func (a *service) GetLogoHandler(w http.ResponseWriter, r *http.Request) {
+func (a *service) getLogoHandler(w http.ResponseWriter, r *http.Request) {
 	obj, err := a.fileStorage.GetObject(a.conf.StoragePayloadBucket, "logo.png", minio.GetObjectOptions{})
 	if err != nil {
 		log.Error(err)

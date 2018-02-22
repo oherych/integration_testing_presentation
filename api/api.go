@@ -129,9 +129,9 @@ func (a *service) DatabaseMigrate(migrationsDir string) error {
 
 func (a *service) setup() http.Handler {
 	r := chi.NewRouter()
-	r.Get("/logo", a.GetLogoHandler)
+	r.Get("/logo", a.getLogoHandler)
 	r.Get("/book", a.getBookListHandler)
-	r.Post("/book", a.createBookHandler)
+	r.Post("/book/{book_id}", a.createBookHandler)
 	r.Get("/book/{book_id}", a.getBookHandler)
 
 	return r

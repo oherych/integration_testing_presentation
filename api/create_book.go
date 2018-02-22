@@ -1,9 +1,8 @@
 package api
 
 import (
+	"github.com/go-chi/chi"
 	"net/http"
-
-	"github.com/satori/go.uuid"
 
 	"github.com/labstack/gommon/log"
 	"github.com/oherych/integration_testing_presentation/model"
@@ -12,14 +11,15 @@ import (
 )
 
 func (a *service) createBookHandler(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "book_id")
 	name := r.PostFormValue("name")
 
 	book := model.Book{
-		BookID: uuid.NewV4().String(),
+		BookID: id,
 		Name:   name,
 	}
 
-	err := a.postgress.Create(&book).Error
+	err := a.postgress.Assign(book).FirstOrCreate(&book).Error
 	if err != nil {
 		log.Error(err)
 		http.Error(w, http.StatusText(500), 500)

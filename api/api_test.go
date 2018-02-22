@@ -12,7 +12,8 @@ import (
 )
 
 const (
-	testBookID1 = "913d5f4e-5759-455d-83fe-72939b3ddf3a"
+	testBookID1      = "913d5f4e-5759-455d-83fe-72939b3ddf3a"
+	newCorrectBookID = "ea9da0a2-1606-48e8-a9f3-5d7a9e84e959"
 )
 
 var (
@@ -31,6 +32,7 @@ var (
 
 // createTestEnv create new test enviroment
 func createTestEnv(t testing.TB) (*httptest.Server, func()) {
+	os.Clearenv()
 	for name, val := range defaultTestEnv {
 		if _, ok := os.LookupEnv(name); !ok {
 			os.Setenv(name, val)
@@ -60,7 +62,7 @@ func createTestEnv(t testing.TB) (*httptest.Server, func()) {
 	}
 
 	// load fixtures
-	b, err := ioutil.ReadFile("../_testdata/fixtures.sql")
+	b, err := ioutil.ReadFile("../testdata/fixtures.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -71,8 +73,9 @@ func createTestEnv(t testing.TB) (*httptest.Server, func()) {
 
 	// load files
 	files := []string{"logo.png"}
+	//TODO: clear bucket
 	for _, filePath := range files {
-		file, err := os.Open("../_testdata/" + filePath)
+		file, err := os.Open("../testdata/" + filePath)
 		if err != nil {
 			t.Fatal(err)
 		}
